@@ -1,39 +1,53 @@
-**Welcome to your Base44 project** 
+# Welcome to your Base44 Project
 
-**About**
+This repository contains everything you need to run your Base44 app locally on your PC.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+Any change you push to this repo will automatically be reflected inside the Base44 Builder.
 
-This project contains everything you need to run your app locally.
+---
 
-**Edit the code in your local development environment**
+## About
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+You can view and edit your app online at:
 
-**Prerequisites:** 
+👉 https://base44.com
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+---
 
+## Prerequisites
+
+Make sure you have installed:
+
+- **Node.js (LTS)**  
+- **npm**
+
+Check versions:
+
+```bash
+node -v
+npm -v
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
+---
 
-Run the app: `npm run dev`
+### Run the App Locally
 
-**Publish your changes**
+Follow these steps to set up the project on your machine.
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+- winget install OpenJS.NodeJS.LTS
+- git clone https://github.com/11franciscog/RankCore-Ascension-Protocol.git
+- open RankCore-Ascension-Protocol dir (cd ...)
+- install dependencies:
+  ```npm install```
+- create .env.local:
+  ```
+  VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
+  VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+   ```
+- run cmd as admin and run: ```npm run dev```
+- will output this ```Local: http://localhost:5173/```, just copy and open in browser
 
-**Docs & Support**
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+---
+
