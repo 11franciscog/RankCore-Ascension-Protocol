@@ -50,5 +50,8 @@ const getAppParams = () => {
 
 
 export const appParams = {
-	...getAppParams()
-}
+  appId: import.meta.env.VITE_APP_ID, // Renamed from VITE_BASE44_APP_ID
+  appBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  token: new URLSearchParams(window.location.search).get('token') || '',
+  functionsVersion: 'prod'
+};

@@ -3,7 +3,7 @@ import { appParams } from '@/lib/app-params';
 
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
-//Create a client with authentication required
+// We export it as 'base44' so AuthContext.jsx can find it
 export const base44 = createClient({
   appId,
   token,
@@ -12,3 +12,6 @@ export const base44 = createClient({
   requiresAuth: false,
   appBaseUrl
 });
+
+// Also provide a default export just in case
+export default base44;
