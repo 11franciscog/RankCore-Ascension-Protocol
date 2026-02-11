@@ -515,7 +515,10 @@ const PlayerHub = ({ playerData, onMissions, onEvents, onShop, onInventory, onSa
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 p-4 md:p-8"
+      className="min-h-screen p-4 md:p-8 bg-cover bg-center"
+      style={{
+        backgroundImage: 'url(https://i.imgur.com/oPIlxv0.png)'
+      }}
     >
       {/* Header */}
       <header className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
