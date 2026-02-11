@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { base44 } from '@/services/api';
+import { useQuery } from '@tanstack/react-query';
+import ShopScreen from '../components/game/ShopScreen';
+import NameSelectionScreen from '../components/game/NameSelectionScreen';
 
 // ============================================
 // RANKCORE: ASCENSION PROTOCOL (R:AP)
@@ -7,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // ============================================
 
 // Dados do Jogo
-const RANKS = ['E', 'D', 'C', 'B', 'A', 'S', 'Ascendant'];
+const RANKS = ['Aprendiz', 'Novato', 'Aspirante', 'Trainee', 'Recruta', 'Estudante', 'Explorador'];
 const XP_THRESHOLDS = [0, 50, 150, 300, 500, 800, 1200];
 
 const INTRO_SCENES = [
@@ -327,15 +331,15 @@ const XPBar = ({ current, threshold, rank }) => {
 const RankBadge = ({ rank }) => {
   const getRankColor = () => {
     const colors = {
-      'E': 'from-stone-700 to-stone-600 border-stone-500',
-      'D': 'from-emerald-700 to-emerald-600 border-emerald-500',
-      'C': 'from-blue-700 to-blue-600 border-blue-500',
-      'B': 'from-purple-700 to-purple-600 border-purple-500',
-      'A': 'from-amber-700 to-amber-600 border-amber-500',
-      'S': 'from-rose-700 to-rose-600 border-rose-500',
-      'Ascendant': 'from-violet-700 via-purple-600 to-pink-600 border-violet-500'
+      'Aprendiz': 'from-stone-700 to-stone-600 border-stone-500',
+      'Novato': 'from-emerald-700 to-emerald-600 border-emerald-500',
+      'Aspirante': 'from-blue-700 to-blue-600 border-blue-500',
+      'Trainee': 'from-purple-700 to-purple-600 border-purple-500',
+      'Recruta': 'from-amber-700 to-amber-600 border-amber-500',
+      'Estudante': 'from-rose-700 to-rose-600 border-rose-500',
+      'Explorador': 'from-violet-700 via-purple-600 to-pink-600 border-violet-500'
     };
-    return colors[rank] || colors['E'];
+    return colors[rank] || colors['Aprendiz'];
   };
 
   return (
@@ -354,7 +358,6 @@ const RankBadge = ({ rank }) => {
       }}
     >
       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-      <span className="text-xs mr-1 opacity-70 relative z-10">RANK</span>
       <span className="text-lg relative z-10">{rank}</span>
     </div>
   );
@@ -506,7 +509,7 @@ const IntroScene = ({ scene, onNext, isLast }) => {
 };
 
 // Componente: Hub Principal do Jogador
-const PlayerHub = ({ playerData, onMissions, onInventory, onSave }) => {
+const PlayerHub = ({ playerData, onMissions, onEvents, onShop, onInventory, onSave }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -520,7 +523,7 @@ const PlayerHub = ({ playerData, onMissions, onInventory, onSave }) => {
         <div className="flex items-center gap-4">
           <RankBadge rank={playerData.rank} />
           <GameButton onClick={onSave} variant="ghost" className="text-sm px-4 py-2">
-            💾 Guardar
+            🚪 Sair
           </GameButton>
         </div>
       </header>
@@ -554,7 +557,7 @@ const PlayerHub = ({ playerData, onMissions, onInventory, onSave }) => {
             
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-amber-100 mb-1 font-serif">{playerData.name}</h2>
-              <p className="text-amber-500/70 text-sm font-serif">Guerreiro Rejeitado • Nível {Math.floor(playerData.xp / 50) + 1}</p>
+              <p className="text-amber-500/70 text-sm font-serif">Guerreiro Rejeitado</p>
             </div>
           </div>
 
@@ -585,7 +588,7 @@ const PlayerHub = ({ playerData, onMissions, onInventory, onSave }) => {
         </motion.div>
 
         {/* Menu de Ações */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -602,8 +605,36 @@ const PlayerHub = ({ playerData, onMissions, onInventory, onSave }) => {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={onInventory}
+            onClick={onEvents}
+            className="bg-black/70 backdrop-blur-sm p-6 border-2 border-purple-700/60 transition-all group relative overflow-hidden"
+            style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent" />
+            <div className="text-4xl mb-3 relative z-10">🌟</div>
+            <h3 className="text-lg font-semibold text-amber-100 mb-1 relative z-10 font-serif">Eventos</h3>
+            <p className="text-sm text-amber-500/70 relative z-10 font-serif">Desafios especiais</p>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onShop}
             className="bg-black/70 backdrop-blur-sm p-6 border-2 border-amber-700/60 transition-all group relative overflow-hidden"
+            style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-transparent" />
+            <div className="text-4xl mb-3 relative z-10">🏪</div>
+            <h3 className="text-lg font-semibold text-amber-100 mb-1 relative z-10 font-serif">Loja</h3>
+            <p className="text-sm text-amber-500/70 relative z-10 font-serif">Equipamentos</p>
+          </motion.button>
+        </div>
+
+        <div className="mt-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onInventory}
+            className="w-full bg-black/70 backdrop-blur-sm p-6 border-2 border-amber-700/60 transition-all group relative overflow-hidden"
             style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-transparent" />
@@ -618,7 +649,7 @@ const PlayerHub = ({ playerData, onMissions, onInventory, onSave }) => {
 };
 
 // Componente: Lista de Missões
-const MissionList = ({ missions, completedMissions, missionCooldowns, onSelectMission, onBack }) => {
+const MissionList = ({ missions, completedMissions, missionCooldowns, onSelectMission, onBack, isEvent = false }) => {
   const isMissionLocked = (missionIndex) => {
     if (missionIndex === 0) return false;
     return !completedMissions.includes(missions[missionIndex - 1].id);
@@ -651,16 +682,25 @@ const MissionList = ({ missions, completedMissions, missionCooldowns, onSelectMi
           <GameButton onClick={onBack} variant="ghost" className="mb-2 px-4 py-2 text-sm">
             ← Voltar
           </GameButton>
-          <h1 className="text-3xl font-bold text-amber-100 font-serif">Missões</h1>
-          <p className="text-amber-500/70 text-sm font-serif">Completa as missões por ordem</p>
-        </div>
+          <h1 className="text-3xl font-bold text-amber-100 font-serif">{isEvent ? 'Eventos' : 'Missões'}</h1>
+          <p className="text-amber-500/70 text-sm font-serif">
+            {isEvent ? 'Eventos especiais com recompensas limitadas' : 'Completa as missões por ordem'}
+          </p>
+          </div>
       </header>
 
       <div className="max-w-2xl mx-auto grid gap-4">
+        {missions.length === 0 && isEvent && (
+          <div className="text-center py-16">
+            <p className="text-amber-400/70 text-lg font-serif">Nenhum evento ativo no momento</p>
+            <p className="text-sm text-amber-500/50 mt-2 font-serif">Eventos aparecem semanalmente</p>
+          </div>
+        )}
+        
         {missions.map((mission, idx) => {
           const isCompleted = completedMissions.includes(mission.id);
-          const isLocked = isMissionLocked(idx);
-          const cooldownText = getMissionCooldownText(mission.id);
+          const isLocked = !isEvent && isMissionLocked(idx);
+          const cooldownText = !isEvent && getMissionCooldownText(mission.id);
           const isOnCooldown = !!cooldownText;
           const isDisabled = isCompleted || isLocked || isOnCooldown;
           
@@ -728,7 +768,7 @@ const MissionList = ({ missions, completedMissions, missionCooldowns, onSelectMi
 };
 
 // Componente: Ecrã de Missão
-const MissionScreen = ({ mission, onChoice, onFail, playerHealth, playerMaxHealth }) => {
+const MissionScreen = ({ mission, onChoice, onFail, onBack, playerHealth, playerMaxHealth }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showResult, setShowResult] = useState(null);
   const [missionStarted, setMissionStarted] = useState(false);
@@ -801,7 +841,10 @@ const MissionScreen = ({ mission, onChoice, onFail, playerHealth, playerMaxHealt
             </p>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex gap-4 justify-center">
+            <GameButton onClick={onBack} variant="secondary">
+              ← Voltar
+            </GameButton>
             <GameButton onClick={() => setMissionStarted(true)}>
               Iniciar Missão
             </GameButton>
@@ -943,7 +986,12 @@ const DefeatScreen = ({ onRestart }) => {
 // Componente: Inventário
 const InventoryScreen = ({ inventory, equipment, onBack, onEquip, onUnequip }) => {
   const [selectedItem, setSelectedItem] = useState(null);
-  const [view, setView] = useState('items'); // 'items' or 'equipment'
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  // Lógica de Filtragem: Filtra o inventário com base no botão clicado
+  const filteredInventory = inventory.filter(item => 
+    activeFilter === 'all' ? true : item.type === activeFilter
+  );
 
   const getRarityColor = (rarity) => {
     const colors = {
@@ -981,238 +1029,129 @@ const InventoryScreen = ({ inventory, equipment, onBack, onEquip, onUnequip }) =
         backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(120, 53, 15, 0.15) 0%, transparent 50%)',
       }}
     >
-      <header className="flex items-center justify-between mb-8">
-        <div>
-          <GameButton onClick={onBack} variant="ghost" className="mb-2 px-4 py-2 text-sm">
-            ← Voltar
-          </GameButton>
-          <h1 className="text-3xl font-bold text-amber-100 font-serif">Inventário</h1>
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={() => setView('items')}
-              className={`px-4 py-2 font-serif transition-all ${
-                view === 'items' 
-                  ? 'text-amber-100 border-b-2 border-amber-500' 
-                  : 'text-amber-500/70 hover:text-amber-400'
-              }`}
-            >
-              Itens ({inventory.length})
-            </button>
-            <button
-              onClick={() => setView('equipment')}
-              className={`px-4 py-2 font-serif transition-all ${
-                view === 'equipment' 
-                  ? 'text-amber-100 border-b-2 border-amber-500' 
-                  : 'text-amber-500/70 hover:text-amber-400'
-              }`}
-            >
-              Equipamento
-            </button>
+      <header className="flex flex-col mb-8">
+        <GameButton onClick={onBack} variant="ghost" className="self-start mb-4 px-4 py-2 text-sm">
+          ← Voltar
+        </GameButton>
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-amber-100 font-serif">Inventário</h1>
+            <p className="text-amber-500/60 font-serif">Gerencia os teus equipamentos e recursos</p>
+          </div>
+
+          {/* MENU DE FILTROS: Substitui o 'view' antigo */}
+          <div className="flex gap-2 bg-black/40 p-1 border border-amber-900/30 rounded-lg">
+            {['all', 'weapon', 'shield', 'armor'].map(type => (
+              <button 
+                key={type}
+                onClick={() => setActiveFilter(type)}
+                className={`text-[10px] md:text-xs px-4 py-2 font-serif transition-all rounded ${
+                  activeFilter === type 
+                  ? 'bg-amber-700 text-amber-100 shadow-inner' 
+                  : 'text-amber-700 hover:text-amber-500 hover:bg-amber-900/10'
+                }`}
+              >
+                {type === 'all' ? 'TUDO' : type === 'weapon' ? 'ARMAS' : type === 'shield' ? 'ESCUDOS' : 'ARMADURAS'}
+              </button>
+            ))}
           </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto">
-        {view === 'items' && (
-          <>
-            {inventory.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
-              >
-                <div className="text-6xl mb-4">🎒</div>
-                <p className="text-amber-300/70 text-lg font-serif">O teu inventário está vazio</p>
-                <p className="text-amber-500/50 text-sm mt-2 font-serif">Completa missões para obter itens</p>
-              </motion.div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {inventory.map((item, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 }}
-                    onClick={() => setSelectedItem(selectedItem?.id === item.id ? null : item)}
-                    className={`
-                      bg-gradient-to-br ${getRarityColor(item.rarity)}
-                      p-6 border-2 shadow-lg shadow-black/60
-                      hover:scale-105 transition-transform cursor-pointer
-                      relative
-                      ${selectedItem?.id === item.id ? 'ring-4 ring-amber-400' : ''}
-                    `}
-                    style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                    {isEquipped(item) && (
-                      <div className="absolute top-2 right-2 text-emerald-400 text-sm font-bold bg-black/70 px-2 py-1 rounded z-10">
-                        EQUIPADO
-                      </div>
-                    )}
-                    <div className="text-5xl mb-4 text-center relative z-10">{getItemIcon(item)}</div>
-                    <h3 className="text-lg font-bold text-amber-50 mb-2 text-center relative z-10 font-serif" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{item.name}</h3>
-                    <p className="text-amber-100/90 text-sm text-center mb-3 relative z-10 font-serif">{item.description}</p>
-                    {item.stats && (
-                      <div className="text-center mb-3 relative z-10">
-                        {item.stats.attack && <p className="text-red-300 text-xs">⚔️ Ataque: +{item.stats.attack}</p>}
-                        {item.stats.defense && <p className="text-blue-300 text-xs">🛡️ Defesa: +{item.stats.defense}</p>}
-                      </div>
-                    )}
-                    <div className="text-center relative z-10">
-                      <span className="text-xs uppercase tracking-wider text-amber-200/70 font-semibold">
-                        {item.rarity}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
-            {/* Item Details Modal */}
-            <AnimatePresence>
-              {selectedItem && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                  onClick={() => setSelectedItem(null)}
-                >
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-black/90 border-4 border-amber-700/70 p-8 max-w-2xl w-full"
-                    style={{
-                      clipPath: 'polygon(20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px), 0 20px)',
-                    }}
-                  >
-                    <div className="text-center mb-6">
-                      <div className="text-6xl mb-4">{getItemIcon(selectedItem)}</div>
-                      <h2 className="text-2xl font-bold text-amber-100 mb-2 font-serif">{selectedItem.name}</h2>
-                      <span className={`inline-block px-4 py-1 text-xs uppercase tracking-wider font-semibold bg-gradient-to-r ${getRarityColor(selectedItem.rarity)}`}>
-                        {selectedItem.rarity}
-                      </span>
-                    </div>
-
-                    {selectedItem.story && (
-                      <div className="mb-6 p-4 bg-amber-900/20 border-2 border-amber-700/40">
-                        <h3 className="text-amber-300 font-bold mb-2 font-serif">História</h3>
-                        <p className="text-amber-100/80 text-sm leading-relaxed font-serif italic">
-                          {selectedItem.story}
-                        </p>
-                      </div>
-                    )}
-
-                    {selectedItem.stats && (
-                      <div className="mb-6">
-                        <h3 className="text-amber-300 font-bold mb-2 font-serif">Estatísticas</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          {selectedItem.stats.attack && (
-                            <div className="bg-red-900/20 border border-red-700/40 p-3 text-center">
-                              <p className="text-red-300 text-2xl font-bold">+{selectedItem.stats.attack}</p>
-                              <p className="text-red-200/70 text-xs">Ataque</p>
-                            </div>
-                          )}
-                          {selectedItem.stats.defense && (
-                            <div className="bg-blue-900/20 border border-blue-700/40 p-3 text-center">
-                              <p className="text-blue-300 text-2xl font-bold">+{selectedItem.stats.defense}</p>
-                              <p className="text-blue-200/70 text-xs">Defesa</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-4 justify-center">
-                      {isEquippable(selectedItem) && (
-                        <>
-                          {!isEquipped(selectedItem) ? (
-                            <GameButton onClick={() => {
-                              onEquip(selectedItem);
-                              setSelectedItem(null);
-                            }}>
-                              Equipar
-                            </GameButton>
-                          ) : (
-                            <GameButton onClick={() => {
-                              onUnequip(selectedItem.type);
-                              setSelectedItem(null);
-                            }} variant="secondary">
-                              Desequipar
-                            </GameButton>
-                          )}
-                        </>
-                      )}
-                      <GameButton onClick={() => setSelectedItem(null)} variant="ghost">
-                        Fechar
-                      </GameButton>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </>
-        )}
-
-        {view === 'equipment' && (
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Weapon Slot */}
-              <div className="bg-black/60 border-2 border-amber-700/60 p-6" style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}>
-                <h3 className="text-amber-300 font-bold mb-4 text-center font-serif">Arma</h3>
-                {equipment.weapon ? (
-                  <div className="text-center">
-                    <div className="text-5xl mb-3">⚔️</div>
-                    <h4 className="text-amber-100 font-bold font-serif">{equipment.weapon.name}</h4>
-                    <p className="text-red-300 text-sm mt-2">Ataque: +{equipment.weapon.stats.attack}</p>
-                  </div>
-                ) : (
-                  <div className="text-center text-amber-500/50 py-8">
-                    <div className="text-4xl mb-2">⚔️</div>
-                    <p className="text-sm font-serif">Sem arma</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Shield Slot */}
-              <div className="bg-black/60 border-2 border-amber-700/60 p-6" style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}>
-                <h3 className="text-amber-300 font-bold mb-4 text-center font-serif">Escudo</h3>
-                {equipment.shield ? (
-                  <div className="text-center">
-                    <div className="text-5xl mb-3">🛡️</div>
-                    <h4 className="text-amber-100 font-bold font-serif">{equipment.shield.name}</h4>
-                    <p className="text-blue-300 text-sm mt-2">Defesa: +{equipment.shield.stats.defense}</p>
-                  </div>
-                ) : (
-                  <div className="text-center text-amber-500/50 py-8">
-                    <div className="text-4xl mb-2">🛡️</div>
-                    <p className="text-sm font-serif">Sem escudo</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Armor Slot */}
-              <div className="bg-black/60 border-2 border-amber-700/60 p-6" style={{ clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)' }}>
-                <h3 className="text-amber-300 font-bold mb-4 text-center font-serif">Armadura</h3>
-                {equipment.armor ? (
-                  <div className="text-center">
-                    <div className="text-5xl mb-3">🦾</div>
-                    <h4 className="text-amber-100 font-bold font-serif">{equipment.armor.name}</h4>
-                    <p className="text-blue-300 text-sm mt-2">Defesa: +{equipment.armor.stats.defense}</p>
-                  </div>
-                ) : (
-                  <div className="text-center text-amber-500/50 py-8">
-                    <div className="text-4xl mb-2">🦾</div>
-                    <p className="text-sm font-serif">Sem armadura</p>
-                  </div>
-                )}
-              </div>
+      {/* Visualização de Equipamentos Atuais */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {['weapon', 'shield', 'armor'].map((slot) => (
+          <div key={slot} className="bg-black/60 border-2 border-amber-900/40 p-4 flex items-center gap-4 relative overflow-hidden">
+            <div className="text-3xl opacity-50">{slot === 'weapon' ? '⚔️' : slot === 'shield' ? '🛡️' : '🦾'}</div>
+            <div className="flex-1">
+              <p className="text-[10px] text-amber-700 font-bold uppercase">{slot}</p>
+              <p className="text-xs text-amber-100 font-serif truncate">
+                {equipment[slot]?.name || 'Vazio'}
+              </p>
             </div>
+            {/* CORREÇÃO AQUI: Chamar onUnequip passando o slot/type correto */}
+            {equipment[slot] && (
+              <button 
+                onClick={() => onUnequip(slot)} 
+                className="bg-red-900/20 px-2 py-1 rounded text-[10px] text-red-500 hover:text-red-400 font-bold border border-red-900/50"
+              >
+                REMOVER
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Lista de Itens Filtrada */}
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-amber-600 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="h-px w-8 bg-amber-900"></span> Coleção de Itens
+        </h2>
+        
+        {filteredInventory.length === 0 ? (
+          <div className="text-center py-20 bg-black/20 border border-dashed border-amber-900/20">
+            <p className="text-amber-800 font-serif italic">Nenhum item encontrado nesta categoria.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredInventory.map((item, idx) => (
+              <motion.div
+                key={idx}
+                layout
+                onClick={() => setSelectedItem(item)}
+                className={`bg-gradient-to-br ${getRarityColor(item.rarity)} p-6 border-2 shadow-lg hover:scale-[1.02] transition-all cursor-pointer relative`}
+                style={{ clipPath: 'polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)' }}
+              >
+                {isEquipped(item) && (
+                  <div className="absolute top-2 right-2 bg-amber-400 text-black text-[9px] font-black px-2 py-0.5 rounded shadow-sm">ATIVO</div>
+                )}
+                <div className="text-5xl mb-4 text-center">{getItemIcon(item)}</div>
+                <h3 className="text-lg font-bold text-white text-center font-serif">{item.name}</h3>
+                <div className="mt-3 flex justify-center gap-4 border-t border-white/10 pt-3">
+                  {item.stats?.attack && <span className="text-red-200 text-xs font-bold">⚔️ +{item.stats.attack}</span>}
+                  {item.stats?.defense && <span className="text-blue-200 text-xs font-bold">🛡️ +{item.stats.defense}</span>}
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Modal de Detalhes (AnimatePresence) */}
+      <AnimatePresence>
+        {selectedItem && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                      onClick={() => setSelectedItem(null)}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-slate-900 border-4 border-amber-700 p-8 max-w-md w-full"
+                        onClick={e => e.stopPropagation()} style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
+              <div className="text-center">
+                <div className="text-6xl mb-4">{getItemIcon(selectedItem)}</div>
+                <h2 className="text-2xl font-bold text-amber-100 font-serif">{selectedItem.name}</h2>
+                <p className="text-amber-500 text-xs mb-4 uppercase tracking-widest">{selectedItem.rarity}</p>
+                <p className="text-slate-300 mb-6 font-serif italic">"{selectedItem.description}"</p>
+                
+                <div className="flex justify-center gap-6 mb-8">
+                   {selectedItem.stats?.attack && <div className="text-center"><p className="text-red-500 font-bold">⚔️ Dano</p><p className="text-white">+{selectedItem.stats.attack}</p></div>}
+                   {selectedItem.stats?.defense && <div className="text-center"><p className="text-blue-500 font-bold">🛡️ Defesa</p><p className="text-white">+{selectedItem.stats.defense}</p></div>}
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {isEquippable(selectedItem) && (
+                    !isEquipped(selectedItem) ? (
+                      <GameButton onClick={() => { onEquip(selectedItem); setSelectedItem(null); }}>EQUIPAR</GameButton>
+                    ) : (
+                      <GameButton onClick={() => { onUnequip(selectedItem.type); setSelectedItem(null); }} variant="secondary">REMOVER</GameButton>
+                    )
+                  )}
+                  <button onClick={() => setSelectedItem(null)} className="text-slate-500 hover:text-white text-xs uppercase font-bold tracking-tighter">Fechar</button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -1261,9 +1200,11 @@ const CreditsScreen = ({ onBack }) => {
 // ============================================
 export default function Game() {
   // Estados do jogo
-  const [gameState, setGameState] = useState('menu'); // menu, intro, hub, missions, mission, defeat, credits, inventory
+  const [gameState, setGameState] = useState('menu'); // menu, name_selection, intro, hub, missions, mission, events, shop, defeat, credits, inventory
   const [introScene, setIntroScene] = useState(0);
   const [currentMission, setCurrentMission] = useState(null);
+  const [currentEvent, setCurrentEvent] = useState(null);
+
   
   // Dados do jogador
   const [playerData, setPlayerData] = useState({
@@ -1271,7 +1212,7 @@ export default function Game() {
     health: 100,
     maxHealth: 100,
     xp: 0,
-    rank: 'E',
+    rank: 'Aprendiz',
     gold: 50,
     missionsCompleted: 0,
     victories: 0,
@@ -1282,11 +1223,23 @@ export default function Game() {
       shield: null,
       armor: null
     },
-    missionCooldowns: {}
+    missionCooldowns: {},
+    completedEvents: []
   });
 
   // Verificar se há save guardado
   const [hasSave, setHasSave] = useState(false);
+
+// Buscar eventos ativos
+  const { data: activeEvents = [] } = useQuery({
+    queryKey: ['activeEvents'],
+    queryFn: async () => {
+      const events = await base44.entities.ActiveEvent.filter({ is_active: true });
+      return events.filter(e => new Date(e.active_until) > new Date());
+    },
+    refetchInterval: 60000, // Recarrega a cada minuto
+    initialData: []
+  });
 
   // Carregar dados guardados ao iniciar
   useEffect(() => {
@@ -1296,11 +1249,18 @@ export default function Game() {
     }
   }, []);
 
-  // Função para guardar progresso
+  // Função para guardar progresso (auto-save)
   const saveGame = useCallback(() => {
     localStorage.setItem('rankcore_save', JSON.stringify(playerData));
     setHasSave(true);
   }, [playerData]);
+
+  // Auto-save quando dados do jogador mudam
+  useEffect(() => {
+    if (gameState !== 'menu' && gameState !== 'name_selection' && gameState !== 'intro' && gameState !== 'credits') {
+      saveGame();
+    }
+  }, [playerData, gameState, saveGame]);
 
   // Função para carregar progresso
   const loadGame = useCallback(() => {
@@ -1322,17 +1282,12 @@ export default function Game() {
     return playerData.rank;
   }, [playerData.rank]);
 
-  // Processar escolha de missão
-  const handleMissionChoice = useCallback((lastChoice, allChoices) => {
+  // Processar escolha de missão ou evento
+  const handleMissionChoice = useCallback((lastChoice, allChoices, isEvent = false) => {
     let newHealth = playerData.health;
     let newXP = playerData.xp;
+    let newGold = playerData.gold;
     let newInventory = [...playerData.inventory];
-
-    // Process all choices from the mission
-    const allMissionChoices = currentMission.questions.map((q, idx) => {
-      if (idx === currentMission.questions.length - 1) return lastChoice;
-      return null; // We'll need to track all choices if needed
-    });
 
     // For now, just process the last choice since we're tracking cumulative effects
     switch (lastChoice.consequence) {
@@ -1355,12 +1310,36 @@ export default function Game() {
     }
 
     const newRank = checkRankUp(newXP);
+
+    if (isEvent) {
+      const newCompletedEvents = [...playerData.completedEvents, currentEvent.event_id];
+      
+      // Salvar conclusão do evento no banco
+      base44.entities.EventCompletion.create({
+        event_id: currentEvent.event_id,
+        completed_at: new Date().toISOString()
+      });
+
+      setPlayerData(prev => ({
+        ...prev,
+        health: newHealth,
+        xp: newXP,
+        gold: newGold + 100, // Bonus gold from events
+        rank: newRank,
+        inventory: newInventory,
+        completedEvents: newCompletedEvents
+      }));
+      
+      setGameState('events');
+      setCurrentEvent(null);
+    } else {
     const newCompletedMissions = [...playerData.completedMissions, currentMission.id];
 
     setPlayerData(prev => ({
       ...prev,
       health: newHealth,
       xp: newXP,
+      gold: newGold + 50,
       rank: newRank,
       inventory: newInventory,
       missionsCompleted: prev.missionsCompleted + 1,
@@ -1370,7 +1349,8 @@ export default function Game() {
 
     setGameState('missions');
     setCurrentMission(null);
-  }, [playerData, currentMission, checkRankUp]);
+    }
+  }, [playerData, currentMission, currentEvent, checkRankUp]);
 
   // Handle mission failure (health reached 0)
   const handleMissionFail = useCallback((missionId) => {
@@ -1411,14 +1391,27 @@ export default function Game() {
     }));
   }, []);
 
+  // Comprar item da loja
+  const buyShopItem = useCallback((item) => {
+    if (playerData.gold >= item.price) {
+      setPlayerData(prev => ({
+        ...prev,
+        gold: prev.gold - item.price,
+        inventory: [...prev.inventory, item]
+      }));
+    }
+  }, [playerData.gold]);
+
   // Reiniciar jogo
   const restartGame = useCallback(() => {
+    localStorage.removeItem('rankcore_save');
+    setHasSave(false);
     setPlayerData({
       name: 'Guerreiro',
       health: 100,
       maxHealth: 100,
       xp: 0,
-      rank: 'E',
+      rank: 'Aprendiz',
       gold: 50,
       missionsCompleted: 0,
       victories: 0,
@@ -1429,9 +1422,10 @@ export default function Game() {
         shield: null,
         armor: null
       },
-      missionCooldowns: {}
+      missionCooldowns: {},
+      completedEvents: []
     });
-    setGameState('hub');
+    setGameState('name_selection');
   }, []);
 
   // Avançar introdução
@@ -1451,7 +1445,7 @@ export default function Game() {
         {gameState === 'menu' && (
           <MainMenu
             key="menu"
-            onStart={() => setGameState('intro')}
+            onStart={restartGame}
             onContinue={loadGame}
             onCredits={() => setGameState('credits')}
             hasSave={hasSave}
@@ -1467,13 +1461,75 @@ export default function Game() {
           />
         )}
 
+        {gameState === 'name_selection' && (
+          <NameSelectionScreen
+            key="name_selection"
+            onConfirm={(name) => {
+              setPlayerData(prev => ({ ...prev, name }));
+              setGameState('intro');
+            }}
+          />
+        )}
+
         {gameState === 'hub' && (
           <PlayerHub
             key="hub"
             playerData={playerData}
             onMissions={() => setGameState('missions')}
+            onEvents={() => setGameState('events')}
+            onShop={() => setGameState('shop')}
             onInventory={() => setGameState('inventory')}
-            onSave={saveGame}
+            onSave={() => setGameState('menu')}
+          />
+        )}
+
+        {gameState === 'events' && (
+          <MissionList
+            key="events"
+            missions={activeEvents.map(e => ({
+              id: e.event_id,
+              title: e.title,
+              description: e.description,
+              image: e.image,
+              questions: e.questions
+            }))}
+            completedMissions={playerData.completedEvents}
+            missionCooldowns={{}}
+            onSelectMission={(event) => {
+              setCurrentEvent(event);
+              setGameState('event');
+            }}
+            onBack={() => setGameState('hub')}
+            isEvent={true}
+          />
+        )}
+
+        {gameState === 'event' && currentEvent && (
+          <MissionScreen
+            key="event"
+            mission={currentEvent}
+            playerHealth={playerData.health}
+            playerMaxHealth={playerData.maxHealth}
+            onChoice={(lastChoice, allChoices) => handleMissionChoice(lastChoice, allChoices, true)}
+            onFail={(eventId) => {
+              setPlayerData(prev => ({ ...prev, health: prev.maxHealth }));
+              setGameState('events');
+              setCurrentEvent(null);
+            }}
+            onBack={() => {
+              setCurrentEvent(null);
+              setGameState('events');
+            }}
+          />
+        )}
+
+        {gameState === 'shop' && (
+          <ShopScreen
+            key="shop"
+            playerGold={playerData.gold}
+            inventory={playerData.inventory}
+            onBuy={buyShopItem}
+            onBack={() => setGameState('hub')}
           />
         )}
 
@@ -1499,6 +1555,10 @@ export default function Game() {
             playerMaxHealth={playerData.maxHealth}
             onChoice={handleMissionChoice}
             onFail={handleMissionFail}
+            onBack={() => {
+              setCurrentMission(null);
+              setGameState('missions');
+            }}
           />
         )}
 

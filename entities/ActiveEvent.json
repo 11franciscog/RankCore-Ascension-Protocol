@@ -1,0 +1,43 @@
+{
+  "name": "ActiveEvent",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "ID \u00fanico do evento"
+    },
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo do evento"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do evento"
+    },
+    "image": {
+      "type": "string",
+      "description": "URL da imagem do evento"
+    },
+    "questions": {
+      "type": "array",
+      "description": "Perguntas do evento em formato JSON"
+    },
+    "active_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora at\u00e9 quando o evento est\u00e1 ativo"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se o evento est\u00e1 ativo"
+    }
+  },
+  "required": [
+    "event_id",
+    "title",
+    "description",
+    "questions",
+    "active_until"
+  ]
+}
