@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const DEFAULT_ITEM_ICON = '/resources/items/tile077.png';
+const getItemImg = (item) => item?.iconUrl || item?.iconPath || DEFAULT_ITEM_ICON;
+
 const SHOP_ITEMS = [
   {
     id: 'shop_sword_bronze',
@@ -113,13 +116,6 @@ export default function ShopScreen({ playerGold, inventory, onBuy, onBack }) {
     return colors[rarity] || colors['comum'];
   };
 
-  const getItemIcon = (item) => {
-    if (item.type === 'weapon') return '⚔️';
-    if (item.type === 'shield') return '🛡️';
-    if (item.type === 'armor') return '🦾';
-    return '📦';
-  };
-
   const canAfford = (item) => playerGold >= item.price;
   const alreadyOwned = (item) => inventory.some(i => i.id === item.id);
 
@@ -192,7 +188,9 @@ export default function ShopScreen({ playerGold, inventory, onBuy, onBack }) {
                     COMPRADO
                   </div>
                 )}
-                <div className="text-5xl mb-4 text-center relative z-10">{getItemIcon(item)}</div>
+                <div className="mb-4 flex justify-center">
+                  <img src={getItemImg(item)} alt={item.name} className="w-16 h-16 object-contain" />
+                </div>
                 <h3 className="text-lg font-bold text-amber-50 mb-2 text-center relative z-10 font-serif" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{item.name}</h3>
                 <p className="text-amber-100/90 text-sm text-center mb-3 relative z-10 font-serif">{item.description}</p>
                 {item.stats && (
@@ -232,7 +230,9 @@ export default function ShopScreen({ playerGold, inventory, onBuy, onBack }) {
               }}
             >
               <div className="text-center mb-6">
-                <div className="text-6xl mb-4">{getItemIcon(selectedItem)}</div>
+                <div className="mb-4 flex justify-center">
+                  <img src={getItemImg(selectedItem)} alt={selectedItem.name} className="w-24 h-24 object-contain" />
+                </div>
                 <h2 className="text-2xl font-bold text-amber-100 mb-2 font-serif">{selectedItem.name}</h2>
                 <span className={`inline-block px-4 py-1 text-xs uppercase tracking-wider font-semibold bg-gradient-to-r ${getRarityColor(selectedItem.rarity)}`}>
                   {selectedItem.rarity}
